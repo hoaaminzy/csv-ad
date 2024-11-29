@@ -1,0 +1,49 @@
+/* DashboardAdmin.css */
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+a {
+  text-decoration: none !important;
+}
+.logo {
+  text-align: center;
+  height: 64px;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.ant-layout {
+  background: #f0f2f5;
+}
+
+.ant-layout-sider {
+  background-color: #001529 !important;
+}
+
+.ant-menu-dark {
+  background-color: #001529 !important;
+}
+
+.ant-layout-header {
+  background: #fff;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.ant-layout-content {
+  background: #fff;
+}
+
+.ant-layout-footer {
+  background-color: #f0f2f5 !important;
+}
+.ql-hd .ant-table-thead th {
+  white-space: nowrap;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
