@@ -6,7 +6,7 @@ import { FaMoneyBill } from "react-icons/fa";
 import { MdContactPhone } from "react-icons/md";
 import { HiOutlineInformationCircle } from "react-icons/hi";
 import { FaUserCheck } from "react-icons/fa";
-
+import * as XLSX from "xlsx";
 import { Tooltip, ResponsiveContainer, PieChart, Pie } from "recharts";
 import { baseUrl } from "../base/baseUrl";
 import { collection, getDocs } from "firebase/firestore";
@@ -14,6 +14,25 @@ import { db } from "../config/FirebaseConfig";
 import { message } from "antd";
 import axios from "axios";
 const Dashboard = () => {
+  const [data, setData] = useState([]);
+
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      const binaryStr = e.target.result;
+      const workbook = XLSX.read(binaryStr, { type: "binary" });
+      const sheetName = workbook.SheetNames[0]; // Chọn sheet đầu tiên
+      const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {
+        header: 1, // Lấy theo hàng
+      });
+      setData(sheetData);
+    };
+
+    reader.readAsBinaryString(file);
+  };
+  console.log(data);
   const pieData = [
     { name: "A", value: 400 },
     { name: "B", value: 300 },
@@ -28,81 +47,20 @@ const Dashboard = () => {
   const [allUserFirebase, setAllUserFirebase] = useState([]);
   const [allBookings, setAllBookings] = useState([]);
   const [blogs, setBlogs] = useState([]);
-  const getAllBookings = async () => {
-    try {
-      const response = await axios.get(`${baseUrl}booking/get-all-bookings`);
-      const bookings = response?.data?.bookings;
-      setAllBookings(bookings);
-    } catch (error) {
-      throw error;
-    }
-  };
-  const allUsers = async () => {
-    try {
-      const res = await axios.get(`${baseUrl}auth/get-all-users`);
-      setAllUser(res.data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const getAllContact = async () => {
-    try {
-      const res = await axios.get(`${baseUrl}contacts/get-all-contact`);
-      setAllContacts(res.data.data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  console.log(allContacts)
-
-  const getAllUsers = async () => {
-    try {
-      const usersCollection = collection(db, "users");
-      const usersSnapshot = await getDocs(usersCollection);
-      const userList = usersSnapshot.docs.map((doc) => doc.data());
-      setAllUserFirebase(userList);
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      return []; // Return an empty array or handle the error as needed
-    }
-  };
-  const getAllTours = async () => {
-    try {
-      const response = await axios.get(`${baseUrl}tour/get-all-tours`);
-      const tours = response?.data?.tours;
-      setAllTours(tours);
-      console.log("Tours fetched successfully:", tours);
-      return tours;
-    } catch (error) {
-      console.error("Error fetching tours:", error);
-      throw error;
-    }
-  };
-
-  const fetchBlogs = async () => {
-    try {
-      const res = await axios.get(`${baseUrl}blogs/get-all-blogs`);
-      setBlogs(res.data);
-    } catch (error) {
-      console.log(error);
-      message.error("Failed to fetch blogs.");
-    }
-  };
+  console.log(data);
+  // const allUsers = async () => {
+  //   try {
+  //     const res = await axios.get(`${baseUrl}auth/get-all-users`);
+  //     setAllUser(res.data);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
 
   const filterRoleUser = allUser.filter((item) => item.role !== "staff");
   const filterRoleStaff = allUser.filter((item) => item.role === "staff");
 
   const combineUser = [...filterRoleUser, ...allUserFirebase];
-  useEffect(() => {
-    allUsers();
-    getAllUsers();
-    getAllTours();
-    getAllBookings();
-    fetchBlogs();
-    getAllContact();
-  }, []);
 
   return (
     <div className="h-[300px]">
@@ -170,6 +128,40 @@ const Dashboard = () => {
           </div>
         </Col>
       </Row>
+      <div className="p-4">
+        <input
+          type="file"
+          accept=".xlsx, .xls"
+          onChange={handleFileUpload}
+          className="mb-4"
+        />
+        <table className="table-auto border-collapse border border-gray-500">
+          <thead>
+            <tr>
+              {data.length > 0 &&
+                Object.keys(data[0]).map((key) => (
+                  <th key={key} className="border border-gray-500 px-4 py-2">
+                    {key}
+                  </th>
+                ))}
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((row, rowIndex) => (
+              <tr key={rowIndex}>
+                {Object.values(row).map((value, colIndex) => (
+                  <td
+                    key={colIndex}
+                    className="border border-gray-500 px-4 py-2"
+                  >
+                    {value}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

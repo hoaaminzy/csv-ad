@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   DesktopOutlined,
   PieChartOutlined,
@@ -10,25 +10,26 @@ import {
 import { FaUser } from "react-icons/fa";
 import { Layout, Menu, Button, Dropdown, message } from "antd";
 import { Link, useNavigate, Route, Routes } from "react-router-dom";
-import AddTour from "./AddTour";
-import AddInforTour from "./AddInforTour";
-import AddInforTourNote from "./AddInforTourNote";
 import AllBill from "./AllBill";
-import AllTour from "./AllTour";
 import AddBlog from "./AddBlog";
 import AllUser from "./AllUser";
-import AddStaff from "./AddStaff";
 import AllStaff from "./AllStaff";
 import AllBlog from "./AllBlog";
 import logo from "../images/logo.png";
-import TourList from "./TourList";
-import AllSchedule from "./AllSchedule";
 import Dashboard from "./Dashboard";
 import AllContact from "./AllContact";
-import { MdContactPhone } from "react-icons/md";
-import { HiOutlineInformationCircle } from "react-icons/hi";
-import { FaUserCheck } from "react-icons/fa";
 import { FaMoneyBill } from "react-icons/fa";
+import AddDepartment from "./AddDepartment";
+import AllDepartment from "./AllDepartment";
+import CreateSchoolYear from "./CreateSchoolYear";
+import AddStudent from "./AddStudent";
+import axios from "axios";
+import { baseUrl } from "../base/baseUrl";
+import GradeTable from "./GradeTable";
+import CreateClass from "./CreateClass";
+import AddCourse from "./AddCourse";
+import FormUpload from "./FormUpload";
+import CreateSchedule from "./CreateSchedule";
 const { Header, Content, Footer, Sider } = Layout;
 
 function getItem(label, key, icon, children) {
@@ -41,6 +42,24 @@ function getItem(label, key, icon, children) {
 }
 
 const DashboardAdmin = () => {
+  const maLop = [
+    {
+      maLop: "20CT1",
+    },
+    {
+      maLop: "20CT2",
+    },
+    {
+      maLop: "IT0103",
+    },
+  ];
+  const [departments, setDepartments] = useState([]);
+  const [schoolYears, setSchoolYears] = useState([]);
+  const [classes, setClasses] = useState([]);
+  const [allCourses, setAllCourses] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [schedule, setSchedule] = useState([]);
+
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const storedUser = JSON.parse(localStorage.getItem("role"));
@@ -50,6 +69,96 @@ const DashboardAdmin = () => {
     message.success("Logged out successfully");
     navigate("/login");
   };
+
+  const groupSchoolYears = (data) => {
+    const grouped = data.reduce((acc, item) => {
+      if (acc[item.year]) {
+        // Split the semester string by commas and flatten it into an array
+        acc[item.year] = [...acc[item.year], ...item.semesters[0].split(",")];
+      } else {
+        // Initialize with the first semester (split by commas)
+        acc[item.year] = item.semesters[0].split(",");
+      }
+      return acc;
+    }, {});
+
+    // Convert grouped object into an array for table display
+    return Object.keys(grouped).map((year) => ({
+      year,
+      semesters: grouped[year].join(", "), // Join semesters by comma
+    }));
+  };
+
+  const fetchClasses = async () => {
+    try {
+      const response = await axios.get(`${baseUrl}classes/get-all-class`);
+      setClasses(response.data);
+    } catch (error) {
+      message.error("Lỗi khi tải danh sách khoa.");
+    }
+  };
+
+  const fetchCourses = async () => {
+    try {
+      const res = await axios.get(
+        "http://localhost:8080/api/courses/get-all-course"
+      );
+      setAllCourses(res.data);
+    } catch (error) {
+      message.error("Lỗi khi tải dữ liệu!");
+    }
+  };
+
+  const fetchSchedule = async () => {
+    try {
+      const res = await axios.get(
+        "http://localhost:8080/api/schedule/get-all-schedule"
+      );
+      setSchedule(res.data);
+    } catch (error) {
+      message.error("Lỗi khi tải dữ liệu!");
+    }
+  };
+
+  const fetchDepartments = async () => {
+    try {
+      const response = await axios.get(
+        `${baseUrl}department/get-all-departments`
+      );
+      setDepartments(response.data);
+    } catch (error) {
+      message.error("Lỗi khi tải danh sách khoa.");
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const response = await axios.get(`${baseUrl}auth/get-all-users`);
+      setUsers(response.data);
+    } catch (error) {
+      message.error("Lỗi khi tải danh sách khoa.");
+    }
+  };
+
+  const fetchSchoolYears = async () => {
+    try {
+      const response = await axios.get(`${baseUrl}schoolyears/get-all-school`);
+      const groupedData = groupSchoolYears(response.data);
+      console.log(response.data);
+      setSchoolYears(groupedData);
+    } catch (error) {
+      message.error("Lỗi khi tải danh sách năm học.");
+    }
+  };
+
+  useEffect(() => {
+    fetchDepartments();
+    fetchSchoolYears();
+    fetchClasses();
+    fetchCourses();
+    fetchUsers();
+    fetchSchedule();
+  }, []);
 
   const menu = (
     <Menu>
@@ -65,62 +174,93 @@ const DashboardAdmin = () => {
   if (storedUser?.role === "admin") {
     items.push(
       getItem(<Link to="/dashboard">Thống kê</Link>, "1", <PieChartOutlined />),
-      getItem("Quản lý tour", "sub1", <QuestionCircleOutlined />, [
-        getItem(<Link to="/dashboard/addTour">Thêm tour</Link>, "3"),
-        getItem(<Link to="/dashboard/allTour">Tất cả các tour</Link>, "4"),
+      getItem("Quản lý sinh viên", "sub1", <QuestionCircleOutlined />, [
         getItem(
-          <Link to="/dashboard/addInforTourNote">Thêm thông tin lưu ý</Link>,
-          "5"
+          <Link to="/dashboard/them-sinh-vien">Tạo thông tin sinh viên</Link>,
+          "3"
         ),
-        getItem(
-          <Link to="/dashboard/addInforTour">Thêm thông tin tour</Link>,
-          "7"
-        ),
+        // getItem(
+        //   <Link to="/dashboard/tat-ca-sinh-vien">Tất cả các sinh viên</Link>,
+        //   "4"
+        // ),
+        // getItem(
+        //   <Link to="/dashboard/addInforTourNote">Thêm thông tin lưu ý</Link>,
+        //   "5"
+        // ),
+        // getItem(
+        //   <Link to="/dashboard/addInforTour">Thêm thông tin tour</Link>,
+        //   "7"
+        // ),
       ]),
-      getItem("Người dùng", "sub2", <FaUser />, [
+      getItem("Quản lý năm học", "sub2", <FaUser />, [
         getItem(
-          <Link to="/dashboard/tat-ca-nguoi-dung">Tất cả người dùng</Link>,
+          <Link to="/dashboard/danh-sach-nam-hoc">Danh sách năm học</Link>,
           "6"
         ),
       ]),
-      getItem("Nhân viên", "sub5", <TeamOutlined />, [
+      getItem("Quản lý giảng viên", "sub5", <TeamOutlined />, [
         getItem(
-          <Link to="/dashboard/tat-ca-nhan-vien">Tất cả nhân viên</Link>,
+          <Link to="/dashboard/danh-sach-giang-vien">Tất cả giảng viên</Link>,
           "8"
         ),
+
         getItem(
-          <Link to="/dashboard/them-nhan-vien">Thêm nhân viên</Link>,
-          "12"
-        ),
-        getItem(
-          <Link to="/dashboard/phan-cong-nhan-vien">Phân công nhân viên</Link>,
-          "16Tất cả tin tức"
+          <Link to="/dashboard/phan-cong-nhan-vien">Phân công giảng viên</Link>,
+          "16"
         ),
       ]),
-      getItem("Quản lý hóa đơn", "sub3", <FaMoneyBill />, [
+      getItem("Quản lý khoa - ngành - lớp", "sub3", <FaMoneyBill />, [
         getItem(
-          <Link to="/dashboard/tat-ca-hoa-don">Tất cả hóa đơn</Link>,
-          "10"
+          <Link to="/dashboard/tat-ca-khoa-nganh">Tất cả Khoa - Ngành</Link>,
+          "11"
+        ),
+        getItem(<Link to="/dashboard/quan-ly-lop-hoc">Tất cả Lớp</Link>, "7"),
+      ]),
+      getItem("Quản lý môn học", "sub4", <FaMoneyBill />, [
+        getItem(
+          <Link to="/dashboard/quan-ly-bai-hoc">Tất cả môn học</Link>,
+          "20"
         ),
       ]),
-      getItem("Quản lý tin tức", "sub4", <SnippetsOutlined />, [
-        getItem(<Link to="/dashboard/them-blog">Thêm tin tức</Link>, "11"),
-        getItem(<Link to="/dashboard/tat-ca-blog">Tất cả tin tức</Link>, "13"),
-      ]),
-      getItem("Quản lý liên hệ", "sub6", <MdContactPhone />, [
+      getItem("Quản lý biểu mẫu", "sub7", <FaMoneyBill />, [
         getItem(
-          <Link to="/dashboard/tat-ca-lien-he">Tất cả liên hệ</Link>,
-          "17"
+          <Link to="/dashboard/tat-ca-bieu-mau">Quản lý biểu mẫu</Link>,
+          "21"
+        ),
+      ]),
+      getItem("Quản lý biểu mẫu", "sub8", <FaMoneyBill />, [
+        getItem(
+          <Link to="/dashboard/quan-ly-lich-hoc">Quản lý lịch học</Link>,
+          "22"
         ),
       ])
+      // getItem("Quản lý tin tức", "sub4", <SnippetsOutlined />, [
+      //   getItem(<Link to="/dashboard/them-blog">Thêm tin tức</Link>, "11"),
+      //   getItem(<Link to="/dashboard/tat-ca-blog">Tất cả tin tức</Link>, "13"),
+      // ]),
+      // getItem("Quản lý liên hệ", "sub6", <MdContactPhone />, [
+      //   getItem(
+      //     <Link to="/dashboard/tat-ca-lien-he">Tất cả liên hệ</Link>,
+      //     "17"
+      //   ),
+      // ])
     );
-  } else if (storedUser?.role === "staff") {
+  } else if (storedUser?.role === "teacher") {
     // Add staff-specific menu items if needed
     items.push(
-      getItem("Quản lý lịch trình", "sub1", <SnippetsOutlined />, [
-        getItem(<Link to="/dashboard/lich-trinh">Lịch trình</Link>, "11"),
-      ])
-      // Add more items specific to staff here
+      getItem(
+        "Quản lý lịch học",
+        "sub1",
+        <SnippetsOutlined />,
+        maLop.map((item, index) =>
+          getItem(
+            <Link to={`/dashboard/danh-sach/${item.maLop}`}>
+              Danh sách lớp {item.maLop}
+            </Link>,
+            `sub1-${index}` // Generate unique keys
+          )
+        )
+      )
     );
   } else {
     items.push(
@@ -129,7 +269,7 @@ const DashboardAdmin = () => {
   }
 
   return (
-    <Layout style={{ height: "100vh" }}>
+    <Layout style={{ minHeight: "100vh", height: "max-content" }}>
       <Sider
         collapsible
         collapsed={collapsed}
@@ -187,7 +327,7 @@ const DashboardAdmin = () => {
           <div
             style={{
               padding: 24,
-              height: "100vh",
+              height: "100%",
               background: "#fff",
               borderRadius: "8px",
               boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
@@ -196,22 +336,62 @@ const DashboardAdmin = () => {
             <Routes>
               <Route path="/" element={<Dashboard />} />
 
-              <Route path="/addTour" element={<AddTour />} />
+              <Route
+                path="/them-sinh-vien"
+                element={
+                  <AddStudent
+                    schoolYears={schoolYears}
+                    departments={departments}
+                    classes={classes}
+                  />
+                }
+              />
 
-              <Route path="/addInforTour" element={<AddInforTour />} />
-              <Route path="/addInforTourNote" element={<AddInforTourNote />} />
-              <Route path="/allTour" element={<AllTour />} />
               <Route path="/tat-ca-hoa-don" element={<AllBill />} />
               <Route path="/tat-ca-nguoi-dung" element={<AllUser />} />
-              <Route path="/them-nhan-vien" element={<AddStaff />} />
-              <Route path="/tat-ca-nhan-vien" element={<AllStaff />} />
-              <Route path="/phan-cong-nhan-vien" element={<TourList />} />
+              <Route path="/danh-sach-giang-vien" element={<AllStaff />} />
+              <Route path="/tat-ca-khoa-nganh" element={<AllDepartment />} />
 
               <Route path="/them-blog" element={<AddBlog />} />
               <Route path="/tat-ca-blog" element={<AllBlog />} />
+              <Route path="/danh-sach-nam-hoc" element={<CreateSchoolYear />} />
+              <Route
+                path="/quan-ly-bai-hoc"
+                element={
+                  <AddCourse
+                    schoolYears={schoolYears}
+                    departments={departments}
+                    classes={classes}
+                    users={users}
+                  />
+                }
+              />
 
-              <Route path="/lich-trinh" element={<AllSchedule />} />
               <Route path="/tat-ca-lien-he" element={<AllContact />} />
+              <Route path="/tat-ca-bieu-mau" element={<FormUpload />} />
+              <Route
+                path="/quan-ly-lich-hoc"
+                element={
+                  <CreateSchedule
+                    schoolYears={schoolYears}
+                    departments={departments}
+                    classes={classes}
+                    allCourses={allCourses}
+                    schedules={schedule}
+                  />
+                }
+              />
+
+              <Route path="/danh-sach/:maLop" element={<GradeTable />} />
+              <Route
+                path="/quan-ly-lop-hoc"
+                element={
+                  <CreateClass
+                    schoolYears={schoolYears}
+                    departments={departments}
+                  />
+                }
+              />
             </Routes>
           </div>
         </Content>

@@ -15,7 +15,7 @@ const Login = () => {
       const response = await axios.post(`${baseUrl}auth/login-admin`, values); // Replace with your API URL
       const { token, user } = response.data;
       // Role-based navigation
-      if (user.role === "admin" || user.role === "staff") {
+      if (user.role === "admin" || user.role === "teacher") {
         // Store the token only if the role is authorized
         localStorage.setItem("token", token);
         localStorage.setItem("role", JSON.stringify(user));
@@ -26,6 +26,7 @@ const Login = () => {
         message.error("Unauthorized role.");
       }
     } catch (error) {
+      console.log(error);
       message.error("Invalid login credentials");
     } finally {
       setLoading(false);
