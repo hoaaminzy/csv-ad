@@ -28,6 +28,9 @@ const CreateSchedule = ({
   const [selectedMajor, setSelectedMajor] = useState("");
   const [handleClick, setHandleClick] = useState(true);
   const [selectedCourse, setSelectedCourse] = useState(null);
+  const [courseHK, setCourseHK] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const [schedule, setSchedule] = useState({
     date: null,
     morning: false,
@@ -45,12 +48,30 @@ const CreateSchedule = ({
       courses: [
         {
           name: "Triết",
+          code: "123",
+          lectureHours: 30,
+          mandatory: true,
+          practiceHours: 30,
+          credits: 3,
+          _id: "triet123",
         },
         {
           name: "Tư tưởng HCM",
+          code: "123",
+          lectureHours: 30,
+          mandatory: true,
+          practiceHours: 30,
+          credits: 3,
+          _id: "hcm123",
         },
         {
           name: "Mac Le nin",
+          code: "123",
+          lectureHours: 30,
+          mandatory: true,
+          practiceHours: 30,
+          credits: 3,
+          _id: "maclenin123",
         },
       ],
     },
@@ -59,9 +80,21 @@ const CreateSchedule = ({
       courses: [
         {
           name: "Đại số",
+          code: "123",
+          lectureHours: 30,
+          mandatory: true,
+          practiceHours: 30,
+          credits: 3,
+          _id: "daiso123",
         },
         {
           name: "Giải tích",
+          code: "123",
+          lectureHours: 30,
+          mandatory: true,
+          practiceHours: 30,
+          credits: 3,
+          _id: "giaitich123",
         },
       ],
     },
@@ -70,6 +103,12 @@ const CreateSchedule = ({
       courses: [
         {
           name: "GDCD",
+          code: "123",
+          lectureHours: 30,
+          mandatory: true,
+          practiceHours: 30,
+          credits: 3,
+          _id: "gdcd123",
         },
       ],
     },
@@ -78,11 +117,16 @@ const CreateSchedule = ({
       courses: [
         {
           name: "Thể dục thể chất",
+          code: "123",
+          lectureHours: 30,
+          mandatory: true,
+          practiceHours: 30,
+          credits: 3,
+          _id: "gdtc123",
         },
       ],
     },
   ];
-
   const handleFacultyChange = (facultyName) => {
     setSelectedFaculty(facultyName);
     const selectedFaculty = departments.find(
@@ -104,13 +148,27 @@ const CreateSchedule = ({
     );
     setSelectedClasses(filteredClasses);
   };
+  const findNganh = allCourses.find(
+    (item) => item.nganh === selectedMajor && item.khoa === selectedFaculty
+  );
 
-  const [courseHK, setCourseHK] = useState([]);
+  const getAllCourses = findNganh?.semesters?.flatMap(
+    (semester) => semester.courses
+  );
+
+  const getAllDepartments = departments?.flatMap((item) => item.majors);
+  const getAllBatbuoc = dataCourses?.flatMap((semester) => semester.courses);
+
+  const safeGetAllCourses = Array.isArray(getAllCourses) ? getAllCourses : [];
+  const safeGetAllBatbuoc = Array.isArray(getAllBatbuoc) ? getAllBatbuoc : [];
+
+  const combineArray = [...safeGetAllCourses, ...safeGetAllBatbuoc];
+
   const handleCourse = (value) => {
     const check = selectedClasses?.semesters.find((item) => item.hk === value);
     setCourseHK(check);
   };
-  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const showModal = () => {
     setIsModalOpen(true);
   };
@@ -122,7 +180,8 @@ const CreateSchedule = ({
   };
 
   const handleCourseChange = (value) => {
-    setSelectedCourse(value);
+    const selected = combineArray?.find((course) => course.name === value);
+    setSelectedCourse(selected);
   };
 
   const handleScheduleChange = (field, value) => {
@@ -132,7 +191,6 @@ const CreateSchedule = ({
   const checkCourseBatBuoc = dataCourses?.find(
     (item) => item.hk === courseHK?.hk
   );
-  console.log(checkCourseBatBuoc);
 
   const handleSubmit = async () => {
     try {
@@ -189,7 +247,7 @@ const CreateSchedule = ({
   };
 
   const columns = [
-    { title: "Môn học", dataIndex: "course", key: "course" },
+    { title: "Môn học", dataIndex: ["course", "name"], key: "course" },
     { title: "Ngày", dataIndex: "date", key: "date" },
     {
       title: "Sáng",
@@ -211,9 +269,63 @@ const CreateSchedule = ({
     },
     { title: "Thời gian", dataIndex: "time", key: "time" },
     { title: "Phòng", dataIndex: "room", key: "room" },
-    { title: "Khoa", dataIndex: "faculty", key: "faculty" },
-    { title: "Ngành", dataIndex: "major", key: "major" },
-    { title: "Học kỳ", dataIndex: "courseHK", key: "courseHK" },
+    {
+      title: "Khoa",
+      dataIndex: "faculty",
+      key: "faculty",
+      filters: departments.map((item) => ({
+        text: item.faculty, // Hiển thị tên khoa
+        value: item.faculty, // Giá trị để lọc
+      })),
+      onFilter: (value, record) => record.faculty === value,
+    },
+    {
+      title: "Ngành",
+      dataIndex: "major",
+      key: "major",
+      filters: getAllDepartments.map((item) => ({
+        text: item.name, // Hiển thị tên khoa
+        value: item.name, // Giá trị để lọc
+      })),
+      onFilter: (value, record) => record.major === value,
+    },
+    {
+      title: "Học kỳ",
+      dataIndex: "courseHK",
+      key: "courseHK",
+      filters: [
+        {
+          text: "Học kỳ 1",
+          value: "Học kỳ 1",
+        },
+        {
+          text: "Học kỳ 2",
+          value: "Học kỳ 2",
+        },
+        {
+          text: "Học kỳ 3",
+          value: "Học kỳ 3",
+        },
+        {
+          text: "Học kỳ 4",
+          value: "Học kỳ 4",
+        },
+
+        {
+          text: "Học kỳ 5",
+          value: "Học kỳ 5",
+        },
+        {
+          text: "Học kỳ 6",
+          value: "Học kỳ 6",
+        },
+        {
+          text: "Học kỳ 7",
+          value: "Học kỳ 7",
+        },
+      ],
+      onFilter: (value, record) => record.courseHK === value,
+    },
     { title: "Số lượng", dataIndex: "slot", key: "slot" },
     { title: "Loại lịch học", dataIndex: "loaiLichHoc", key: "loaiLichHoc" },
   ];
@@ -224,10 +336,13 @@ const CreateSchedule = ({
       <Button type="primary" className="mb-3" onClick={showModal}>
         Tạo lịch học
       </Button>
+      <Button type="primary" className="mb-3" onClick={showModal}>
+        Tạo lịch học
+      </Button>
       <Modal
         open={isModalOpen}
         onCancel={handleCancel}
-        title="Thêm Lịch Trình"
+        title="Thêm lịch học"
         footer={null}
       >
         <Form layout="vertical">
@@ -377,7 +492,6 @@ const CreateSchedule = ({
               <Option value="Lịch học trực tuyến">Lịch học trực tuyến</Option>
               <Option value="Lịch học thực hành">Lịch học thực hành</Option>
               <Option value="Lịch học lý thuyết">Lịch học lý thuyết</Option>
-              <Option value="Lịch thi">Lịch thi</Option>
               <Option value="Lịch tạm ngưng">Lịch tạm ngưng</Option>
             </Select>
           </Form.Item>
