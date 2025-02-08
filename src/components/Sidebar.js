@@ -30,6 +30,7 @@ import CreateClass from "./CreateClass";
 import AddCourse from "./AddCourse";
 import FormUpload from "./FormUpload";
 import CreateSchedule from "./CreateSchedule";
+import CourseRegistration from "./CourseRegistration";
 const { Header, Content, Footer, Sider } = Layout;
 
 function getItem(label, key, icon, children) {
@@ -228,11 +229,12 @@ const DashboardAdmin = () => {
           "21"
         ),
       ]),
-      getItem("Quản lý biểu mẫu", "sub8", <FaMoneyBill />, [
+      getItem("Quản lý lịch học", "sub8", <FaMoneyBill />, [
         getItem(
           <Link to="/dashboard/quan-ly-lich-hoc">Quản lý lịch học</Link>,
           "22"
         ),
+        getItem(<Link to="/dashboard/mo-dang-ky">Mở đăng kýÏ</Link>, "23"),
       ])
       // getItem("Quản lý tin tức", "sub4", <SnippetsOutlined />, [
       //   getItem(<Link to="/dashboard/them-blog">Thêm tin tức</Link>, "11"),
@@ -369,6 +371,8 @@ const DashboardAdmin = () => {
 
               <Route path="/tat-ca-lien-he" element={<AllContact />} />
               <Route path="/tat-ca-bieu-mau" element={<FormUpload />} />
+              <Route path="/mo-dang-ky" element={<CourseRegistration />} />
+
               <Route
                 path="/quan-ly-lich-hoc"
                 element={

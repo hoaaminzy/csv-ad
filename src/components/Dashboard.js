@@ -32,13 +32,6 @@ const Dashboard = () => {
 
     reader.readAsBinaryString(file);
   };
-  console.log(data);
-  const pieData = [
-    { name: "A", value: 400 },
-    { name: "B", value: 300 },
-    { name: "C", value: 300 },
-    { name: "D", value: 200 },
-  ];
 
   const [allTours, setAllTours] = useState([]);
   const [allUser, setAllUser] = useState([]);
