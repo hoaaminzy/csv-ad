@@ -14,34 +14,15 @@ const CreateSchoolYear = () => {
   const fetchSchoolYears = async () => {
     try {
       const response = await axios.get(`${baseUrl}schoolyears/get-all-school`);
-      const groupedData = groupSchoolYears(response.data);
-      console.log(response.data);
-      setSchoolYears(groupedData);
+      setSchoolYears(response.data);
     } catch (error) {
-      message.error("Lỗi khi tải danh sách năm học.");
+      console.log("Lỗi khi tải danh sách năm học.");
     }
   };
   useEffect(() => {
     fetchSchoolYears();
   }, []);
-  const groupSchoolYears = (data) => {
-    const grouped = data.reduce((acc, item) => {
-      if (acc[item.year]) {
-        // Split the semester string by commas and flatten it into an array
-        acc[item.year] = [...acc[item.year], ...item.semesters[0].split(",")];
-      } else {
-        // Initialize with the first semester (split by commas)
-        acc[item.year] = item.semesters[0].split(",");
-      }
-      return acc;
-    }, {});
 
-    // Convert grouped object into an array for table display
-    return Object.keys(grouped).map((year) => ({
-      year,
-      semesters: grouped[year].join(", "), // Join semesters by comma
-    }));
-  };
   const handleSubmit = async (values) => {
     try {
       if (editingSchoolYear) {
@@ -85,11 +66,7 @@ const CreateSchoolYear = () => {
       dataIndex: "year",
       key: "year",
     },
-    {
-      title: "Học kỳ",
-      dataIndex: "semesters",
-      key: "semesters",
-    },
+
     {
       title: "Hành động",
       key: "actions",
@@ -103,7 +80,6 @@ const CreateSchoolYear = () => {
               form.setFieldsValue({
                 id: record._id,
                 year: record.year,
-                semester: record.semesters.split(", "), // Handle semester as array
               });
             }}
           >
@@ -155,14 +131,6 @@ const CreateSchoolYear = () => {
             name="year"
             label="Năm học"
             rules={[{ required: true, message: "Vui lòng nhập năm học!" }]}
-          >
-            <Input />
-          </Form.Item>
-
-          <Form.Item
-            name="semester"
-            label="Học kỳ"
-            rules={[{ required: true, message: "Vui lòng nhập học kỳ!" }]}
           >
             <Input />
           </Form.Item>

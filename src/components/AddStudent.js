@@ -31,10 +31,8 @@ const AddStudent = ({ schoolYears, departments, classes }) => {
   const handleUpload = (file) => {
     console.log("Uploaded File:", file); // Log the uploaded file
 
-    // Save the raw file in the state
     setImage(file);
 
-    // Prevent the Upload component from automatically uploading the file
     return false;
   };
   useEffect(() => {

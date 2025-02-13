@@ -71,25 +71,6 @@ const DashboardAdmin = () => {
     navigate("/login");
   };
 
-  const groupSchoolYears = (data) => {
-    const grouped = data.reduce((acc, item) => {
-      if (acc[item.year]) {
-        // Split the semester string by commas and flatten it into an array
-        acc[item.year] = [...acc[item.year], ...item.semesters[0].split(",")];
-      } else {
-        // Initialize with the first semester (split by commas)
-        acc[item.year] = item.semesters[0].split(",");
-      }
-      return acc;
-    }, {});
-
-    // Convert grouped object into an array for table display
-    return Object.keys(grouped).map((year) => ({
-      year,
-      semesters: grouped[year].join(", "), // Join semesters by comma
-    }));
-  };
-
   const fetchClasses = async () => {
     try {
       const response = await axios.get(`${baseUrl}classes/get-all-class`);
@@ -144,9 +125,7 @@ const DashboardAdmin = () => {
   const fetchSchoolYears = async () => {
     try {
       const response = await axios.get(`${baseUrl}schoolyears/get-all-school`);
-      const groupedData = groupSchoolYears(response.data);
-      console.log(response.data);
-      setSchoolYears(groupedData);
+      setSchoolYears(response.data);
     } catch (error) {
       message.error("Lỗi khi tải danh sách năm học.");
     }
