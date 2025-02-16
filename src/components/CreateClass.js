@@ -115,7 +115,17 @@ const CreateClass = ({ schoolYears, departments }) => {
     }
   };
 
-  const handleDelete = () => {};
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(
+        `http://localhost:8080/api/classes/delete-class/${id}`
+      );
+      message.success("Xóa thành Công");
+      fetchClasses();
+    } catch (error) {
+      console.log(error);
+    }
+  };
   // Define columns for Ant Design Table
   const columns = [
     {

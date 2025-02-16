@@ -8,6 +8,8 @@ import {
   Input,
   DatePicker,
   Checkbox,
+  Popconfirm,
+  message,
 } from "antd";
 import axios from "axios";
 import dayjs from "dayjs";
@@ -30,7 +32,8 @@ const CreateSchedule = ({
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [courseHK, setCourseHK] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  const [updatingScheduleId, setUpdatingScheduleId] = useState(null);
+  const [isUpdateMode, setIsUpdateMode] = useState(false);
   const [schedule, setSchedule] = useState({
     date: null,
     morning: false,
@@ -192,28 +195,66 @@ const CreateSchedule = ({
     (item) => item.hk === courseHK?.hk
   );
 
+  const openCreateModal = () => {
+    setIsModalOpen(true);
+    setIsUpdateMode(false);
+    setSchedule({
+      date: null,
+      morning: false,
+      afternoon: false,
+      evening: false,
+      time: "",
+      room: "",
+      loaiLichHoc: "",
+      slot: "",
+    });
+  };
+
+  const openUpdateModal = (record) => {
+    setIsModalOpen(true);
+    setIsUpdateMode(true);
+    setUpdatingScheduleId(record._id);
+    setSchedule({
+      date: dayjs(record.date),
+      morning: record.morning,
+      afternoon: record.afternoon,
+      evening: record.evening,
+      time: record.time,
+      room: record.room,
+      loaiLichHoc: record.loaiLichHoc,
+      slot: record.slot,
+    });
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`http://localhost:8080/api/schedule/schedule/${id}`);
+      message.success("Xóa thành Công");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const handleSubmit = async () => {
     try {
       const scheduleData = {
+        ...schedule,
         course: selectedCourse,
         date: schedule.date ? dayjs(schedule.date).format("YYYY-MM-DD") : null,
-        morning: schedule.morning,
-        afternoon: schedule.afternoon,
-        evening: schedule.evening,
-        time: schedule.time,
-        room: schedule.room,
-        loaiLichHoc: schedule.loaiLichHoc,
-        slot: schedule.slot,
         faculty: selectedFaculty,
         major: selectedMajor,
         courseHK: courseHK?.hk,
       };
-      const response = await axios.post(
-        "http://localhost:8080/api/schedule/schedule",
-        scheduleData
-      );
+      // const response = await axios.post(
+      //   "http://localhost:8080/api/schedule/schedule",
+      //   scheduleData
+      // );
 
-      if (response.statusText === "Created") {
+      if (isUpdateMode) {
+        await axios.put(
+          `http://localhost:8080/api/schedule/${updatingScheduleId}`,
+          scheduleData
+        );
         Modal.success({
           content: "Lịch học đã được lưu thành công!",
         });
@@ -233,10 +274,29 @@ const CreateSchedule = ({
         setSelectedMajors([]);
         setSelectedClasses([]);
       } else {
-        Modal.error({
-          content: "Đã có lỗi xảy ra, vui lòng thử lại.",
+        await axios.post(
+          "http://localhost:8080/api/schedule/schedule",
+          scheduleData
+        );
+        setIsModalOpen(false);
+        setSchedule({
+          date: null,
+          morning: false,
+          afternoon: false,
+          evening: false,
+          time: "",
+          room: "",
+          slot: "",
         });
+        setSelectedCourse(null);
+        setSelectedFaculty("");
+        setSelectedMajor("");
+        setSelectedMajors([]);
+        setSelectedClasses([]);
+        Modal.success({ content: "Lịch học đã được tạo thành công!" });
       }
+
+      setIsModalOpen(false);
     } catch (error) {
       // Handle errors during submission
       Modal.error({
@@ -247,6 +307,13 @@ const CreateSchedule = ({
   };
 
   const columns = [
+    {
+      title: "STT",
+      dataIndex: "stt",
+      key: "stt",
+      render: (_, __, idx) => idx + 1,
+    },
+
     { title: "Môn học", dataIndex: ["course", "name"], key: "course" },
     { title: "Ngày", dataIndex: "date", key: "date" },
     {
@@ -327,22 +394,66 @@ const CreateSchedule = ({
       onFilter: (value, record) => record.courseHK === value,
     },
     { title: "Số lượng", dataIndex: "slot", key: "slot" },
-    { title: "Loại lịch học", dataIndex: "loaiLichHoc", key: "loaiLichHoc" },
+    {
+      title: "Loại lịch học",
+      dataIndex: "loaiLichHoc",
+      key: "loaiLichHoc",
+      filters: [
+        {
+          text: "Lịch học trực tuyến",
+          value: "Lịch học trực tuyến",
+        },
+        {
+          text: "Lịch học thực hành",
+          value: "Lịch học thực hành",
+        },
+        {
+          text: "Lịch học tạm ngưng",
+          value: "Lịch học tạm ngưng",
+        },
+        {
+          text: "Lịch thi",
+          value: "Lịch thi",
+        },
+
+        {
+          text: "Lịch học lý thuyết",
+          value: "Lịch học lý thuyết",
+        },
+      ],
+      onFilter: (value, record) => record.loaiLichHoc === value,
+    },
+    {
+      title: "Hành động",
+      key: "action",
+      render: (_, record) => (
+        <div className="flex items-center gap-3">
+          <Button type="primary" onClick={() => openUpdateModal(record)}>
+            Sửa
+          </Button>
+          <Popconfirm
+            title="Xác nhận xóa?"
+            onConfirm={() => handleDelete(record._id)}
+          >
+            <Button type="primary" danger>
+              Xóa
+            </Button>
+          </Popconfirm>
+        </div>
+      ),
+    },
   ];
 
   return (
     <div className="">
       <HeadingPage title="Quản lý môn học" />
-      <Button type="primary" className="mb-3" onClick={showModal}>
-        Tạo lịch học
-      </Button>
-      <Button type="primary" className="mb-3" onClick={showModal}>
+      <Button type="primary" className="mb-3" onClick={openCreateModal}>
         Tạo lịch học
       </Button>
       <Modal
         open={isModalOpen}
         onCancel={handleCancel}
-        title="Thêm lịch học"
+        title={isUpdateMode ? "Cập nhật Lịch Học" : "Thêm Lịch Học"}
         footer={null}
       >
         <Form layout="vertical">
@@ -493,12 +604,13 @@ const CreateSchedule = ({
               <Option value="Lịch học thực hành">Lịch học thực hành</Option>
               <Option value="Lịch học lý thuyết">Lịch học lý thuyết</Option>
               <Option value="Lịch tạm ngưng">Lịch tạm ngưng</Option>
+              <Option value="Lịch thi">Lịch thi</Option>
             </Select>
           </Form.Item>
 
           <Form.Item>
             <Button type="primary" onClick={handleSubmit}>
-              Lưu Lịch Học
+              {isUpdateMode ? "Cập nhật" : "Tạo"}
             </Button>
           </Form.Item>
         </Form>

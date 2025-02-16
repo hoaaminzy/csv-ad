@@ -31,6 +31,9 @@ import AddCourse from "./AddCourse";
 import FormUpload from "./FormUpload";
 import CreateSchedule from "./CreateSchedule";
 import CourseRegistration from "./CourseRegistration";
+import { AiOutlineSchedule } from "react-icons/ai";
+import { CiCalendar } from "react-icons/ci";
+import { FaBook } from "react-icons/fa";
 const { Header, Content, Footer, Sider } = Layout;
 
 function getItem(label, key, icon, children) {
@@ -76,7 +79,7 @@ const DashboardAdmin = () => {
       const response = await axios.get(`${baseUrl}classes/get-all-class`);
       setClasses(response.data);
     } catch (error) {
-      message.error("Lỗi khi tải danh sách khoa.");
+      console.log("Lỗi khi tải dữ liệu!");
     }
   };
 
@@ -87,7 +90,7 @@ const DashboardAdmin = () => {
       );
       setAllCourses(res.data);
     } catch (error) {
-      message.error("Lỗi khi tải dữ liệu!");
+      console.log("Lỗi khi tải dữ liệu!");
     }
   };
 
@@ -98,7 +101,7 @@ const DashboardAdmin = () => {
       );
       setSchedule(res.data);
     } catch (error) {
-      message.error("Lỗi khi tải dữ liệu!");
+      console.log("Lỗi khi tải dữ liệu!");
     }
   };
 
@@ -109,7 +112,7 @@ const DashboardAdmin = () => {
       );
       setDepartments(response.data);
     } catch (error) {
-      message.error("Lỗi khi tải danh sách khoa.");
+      console.log("Lỗi khi tải dữ liệu!");
     }
   };
 
@@ -118,7 +121,7 @@ const DashboardAdmin = () => {
       const response = await axios.get(`${baseUrl}auth/get-all-users`);
       setUsers(response.data);
     } catch (error) {
-      message.error("Lỗi khi tải danh sách khoa.");
+      console.log("Lỗi khi tải dữ liệu!");
     }
   };
 
@@ -127,7 +130,7 @@ const DashboardAdmin = () => {
       const response = await axios.get(`${baseUrl}schoolyears/get-all-school`);
       setSchoolYears(response.data);
     } catch (error) {
-      message.error("Lỗi khi tải danh sách năm học.");
+      console.log("Lỗi khi tải dữ liệu!");
     }
   };
 
@@ -196,24 +199,24 @@ const DashboardAdmin = () => {
         ),
         getItem(<Link to="/dashboard/quan-ly-lop-hoc">Tất cả Lớp</Link>, "7"),
       ]),
-      getItem("Quản lý môn học", "sub4", <FaMoneyBill />, [
+      getItem("Quản lý môn học", "sub4", <AiOutlineSchedule />, [
         getItem(
           <Link to="/dashboard/quan-ly-bai-hoc">Tất cả môn học</Link>,
           "20"
         ),
       ]),
-      getItem("Quản lý biểu mẫu", "sub7", <FaMoneyBill />, [
+      getItem("Quản lý biểu mẫu", "sub7", <FaBook />, [
         getItem(
           <Link to="/dashboard/tat-ca-bieu-mau">Quản lý biểu mẫu</Link>,
           "21"
         ),
       ]),
-      getItem("Quản lý lịch học", "sub8", <FaMoneyBill />, [
+      getItem("Quản lý lịch học", "sub8", <CiCalendar />, [
         getItem(
           <Link to="/dashboard/quan-ly-lich-hoc">Quản lý lịch học</Link>,
           "22"
         ),
-        getItem(<Link to="/dashboard/mo-dang-ky">Mở đăng kýÏ</Link>, "23"),
+        getItem(<Link to="/dashboard/mo-dang-ky">Mở đăng ký</Link>, "23"),
       ])
       // getItem("Quản lý tin tức", "sub4", <SnippetsOutlined />, [
       //   getItem(<Link to="/dashboard/them-blog">Thêm tin tức</Link>, "11"),

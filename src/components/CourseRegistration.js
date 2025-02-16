@@ -14,7 +14,6 @@ const CourseRegistration = () => {
   const [selectedHK, setSelectedHK] = useState(null);
   const [registeredCourses, setRegisteredCourses] = useState([]);
 
-  // 📌 Lấy học kỳ mở từ API khi load trang
   useEffect(() => {
     const fetchOpenSemester = async () => {
       try {
@@ -30,7 +29,6 @@ const CourseRegistration = () => {
     fetchOpenSemester();
   }, []);
 
-  // 📌 Cập nhật học kỳ mở vào MongoDB
   const handleAdminSelectHK = async (value) => {
     try {
       await axios.post("http://localhost:8080/api/registrationStatus/open-hk", {
@@ -43,18 +41,15 @@ const CourseRegistration = () => {
     }
   };
 
-  // 📌 Đăng ký môn học
   const handleRegister = (course) => {
     setRegisteredCourses((prev) => [...prev, course]);
   };
 
-  // 📌 Lọc môn học hiển thị: Học kỳ đang mở hoặc đã đăng ký
   const filteredCourses = data.filter(
     (course) =>
       course.courseHK === selectedHK || registeredCourses.includes(course)
   );
 
-  // 📌 Cấu hình bảng
   const columns = [
     { title: "Môn học", dataIndex: "monHoc", key: "monHoc" },
     { title: "Học kỳ", dataIndex: "courseHK", key: "courseHK" },
